@@ -1,0 +1,169 @@
+The paper used here: jahfari 2018
+
+Check out these video tutorials:
+https://youtu.be/aB-bmcp5ET4?list=PLB2iAtgpI4YHlH4sno3i3CUjCofI38a-3
+
+Onset/ function analysis usually contain the format
+
+task_X_run_XXX
+
+where task_X are the total number of tasks
+and run_XXX explains the regressors that go into that task.
+
+Then within each tasks there may be different conditions to model.
+
+Let's for example:
+
+task_001_run_001 has four conditions
+
+condition 1, 2, 3, 4
+
+If we look at condition 1:
+
+We get three columns of information (onset):
+
+Time (seconds) | Duration of the trial | Parametric modulation
+
+# Note: We should also check volumes to see if there is some spooky behaviour
+
+$ fslnvols <NIfTI file>
+
+# check orientation and look if things are okay
+
+$ fslview <NIfTI file>
+ 
+We don't want RL swaps in the data!
+
+$ fslreorient2std
+
+To swap the dimensions
+
+$ fslswapdim
+
+____
+
+################################
+# FSL pipeline
+################################
+###
+# Skull stripping and QA assessment
+#
+# Aka First Level Analyses
+
+When we do image registration, the algorithms assume the skull is stripped. This can be a problematic. 
+
+bet <input> <output> [options]
+
+-R robust estimation of center
+
+The centre is estimated and then the boundries are expanded until they find another boundary. This is how the brain is seperated from the boundary of skull.
+
+
+# QA (preparing the BOLD data)
+
+After having the structural data set we will do a quality assessment.
+
+We will load the mask of the brain (extracted brain image) and the original image for QA.
+
+Typical steps:
+1.) Trimming the volumes: 
+Depends from scanner to scanner. In my case I had to trimm first 6 volume, as stated in the paper.
+
+There is a scanner warmup time that lasts for about 5 volumes.
+
+2.) Motion correction
+
+Motion "scrubbing" -- modeling out bad time points
+
+or ICA based FIX algorithms. Semi-automated noise component selection.
+
+$ fslroi 
+^ is used to chop off the extra volumes
+
+$ fsl_motion_outliers
+^ is used to do motion correction
+
+3.) Slice time correction
+
+etc.
+
+
+____
+
+For all of this we are going to use design.fsf file and then FEAT, which will do the corrections
+
+$ feat design.fsf
+
+And we get a live report with all the statistics.
+
+In my case I specified all parameters inside the design.fsf file itself.
+
+____
+
+# Let's talk about all the options in FEAT v 6.0 GUI, before moving on
+
+# Data tab:
+
+-> high pass filter cutoff(s): chopping off low frequency noise
+
+# Pre-stats
+
+-> Motion correction: MCFLIRT is the function that does the motion correction
+
+we get help bubbles explaining every component.
+
+-> Slice timing correction: 
+
+How the slices were ordered. This is usually not done in practice.
+
+-> FWHM (mm): smoothening kernel, (set twice the voxel size)
+
+I set it to 3 x 3
+
+# Registation tab
+
+-> Main str image: skull stripped image
+
+-> standard space
+
+I set it to Full search with 12 DOF, and Boundary Based Registration. It does quite good job.
+
+____
+
+# Stats
+
+-> use FILM prewhitening
+
+from MCFLIRT we get motion parameters we can use Standard (6), Standard + extended (6 + derivatives)
+
+-> Add additional confound EVs
+
+A text file in 1 column format with motion "scrubbing" 
+
+From motion access we can add confound.txt
+
+
+#-> Full model setup
+
+Look at the data and set the number of variables == number of conditions
+
+-> Convolution: Double Gamma HRF
+
+Gamma tends to overestimate estimation.
+
+-> Stddev (s) = 3
+
+(standard 3 column onset)
+
+-> Add temporal derivative (leave on)
+
+-> Apply temporal filtering (always leave on)
+
+# make sure higpass was on in Pre-stats to do this
+
+
+
+ 
+____
+
+

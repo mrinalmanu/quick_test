@@ -1,0 +1,8 @@
+"set fmri(outputdir) /home/mrinalmanu/Documents/control_conflic_jc/raw_data.nii._gz"
+"set fmri(outputdir) /home/mrinalmanu/Documents/control_conflic_jc/raw_data"
+
+
+"HERE"
+"set fmri(outputdir) /home/mrinalmanu/Documents/control_conflic_jc/raw_data"
+"set fmri(outputdir) /home/mrinalmanu/Documents/control_conflic_jc/raw_data"
+"$out_dir"
