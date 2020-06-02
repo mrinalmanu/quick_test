@@ -1,0 +1,2 @@
+# formula for libreoffice cell
+=A2/10^INT(LOG10(A2)) & " * 10^" & INT(LOG10(A2))
