@@ -1,0 +1,22 @@
+## sequence info: 1) group by rotation, 2) select only numeric columns, 3) apply shapiro test to each column
+# I have to do this in a twisted way because I have severe dependency issues with tidyverse, the packages are corrupt and nothing works
+
+# first i would substitute counter with 0 and clock with 1, i can simply g-sub
+data <- kitchen_df
+
+data$Rotation <- gsub('counter', 0, data$Rotation)
+data$Rotation <- gsub('clock', 1, data$Rotation)
+data$Rotation <- as.numeric(data$Rotation)
+
+# 1 now get all the numeric columns
+num_df <- data[ , purrr::map_lgl(data, is.numeric)]
+
+# 2 further, split for rotation values
+one_df <- split(num_df, num_df$Rotation)
+
+# 3
+# shapiros <- Map(function(x)cbind(shapiro.test(x)$statistic,shapiro.test(x)$p.value),one_df)
+# myout<-ldply(shapiros)
+# names(myout)<-c("var","W","p.value")
+
+# myout
